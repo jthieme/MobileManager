@@ -2,7 +2,7 @@ import java.util.*
 
 object Password {
     var passwords = arrayOfNulls<String>(0) // Create empty password array
-    var dict = Hashtable<String, String?>()
+    //var dict = Hashtable<String, String?>()
     var type: String? = null
     var email: String? = null
     var masterPass: String? = null
@@ -26,7 +26,7 @@ object Password {
     fun create(newest: String?): String? {
 
         // Add items to the dictionary
-        val passwordData = hashMapOf(
+        val passwordData: Any = hashMapOf(
             "serviceName" to type,
             "email" to email,
             "password" to newest
@@ -45,11 +45,9 @@ object Password {
     }
 
     fun newest(newest: String?): String? {
-        // If the array is empty
-        if (dict.size == 0) {
-            // Create a new password array
-            create(newest)
-        } else create(newest)
+
+        // Create a new password array
+        create(newest)
         return newest
     }
 

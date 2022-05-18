@@ -26,18 +26,18 @@ fun main() {
         println("No data exists here.")
     }
 
-    val passwordData = hashMapOf(
+    val passwordData: Map<String, Any> = hashMapOf(
 
         "serviceName" to "Google",
         "email" to "jomthieme@gmail.com",
         "password" to "orange",
     )
 
-    val testData = hashMapOf(
+    val testData: Map<String, Any> = hashMapOf(
         "accountInfo" to passwordData,
         "masterPass" to "masatater",
     )
-    users.document("testUser").set(testData as Map<String, Any>)*/
+    users.document("testUser").set(testData)*/
 
     PasswordManager.main()
 

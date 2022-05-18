@@ -1,3 +1,4 @@
+import com.google.api.services.storage.model.Bucket.Encryption
 import java.util.*
 
 // 1. Add a password
@@ -7,16 +8,19 @@ import java.util.*
 // 5. Allow the passwords to be decrypted when the correct Master password is entered
 // 6. View all the passwords as long as the master password has been provided
 // TODO:
-// Upon every start after first, have user enter in master password
+// Create User class -> NO ARRAYS
+// Password class only holds a single password
+// User has a Password
+// User class should have a mutableList
 // Decrypt passwords once the master password has been entered
 // Save and encrypt passwords to users selected destination
 object PasswordManager {
     // Set the private member variables
-    var master = Scanner(System.`in`) // Initialize scanner object for master password
+    var master = Scanner(System.`in`)   // Initialize scanner object for master password
     var masterPassword : String? = null // Initialize master password variable
-    var user = Scanner(System.`in`) // Initialize scanner object for master password
-    var userName : String? = null // Initialize master password variable
-    var choose = Scanner(System.`in`) // Get user input for options
+    var user = Scanner(System.`in`)     // Initialize scanner object for master password
+    var userName : String? = null       // Initialize master password variable
+    var choose = Scanner(System.`in`)   // Get user input for options
     var choice: String? = null
     var checkMaster: String? = null
     var enterMaster: String? = null
@@ -41,7 +45,8 @@ object PasswordManager {
 
         // Set masterPassword to receive user input
         masterPassword = master.next()
-        Password.createMaster(masterPassword)
+        User.setMaster(masterPassword.toString())
+        //Password.createMaster(masterPassword)
 
         // Return the masterPassword
         return masterPassword
@@ -58,7 +63,8 @@ object PasswordManager {
         userName = user.next()
 
         // Set user name for the database
-        Database.setUserName(userName.toString())
+        User.setUserName(userName.toString())
+        //Database.setUserName(userName.toString())
     }
 
     fun menu() {
@@ -66,7 +72,12 @@ object PasswordManager {
         println("\nPlease select what you would like to do: ")
 
         // Display available options
-        println("1. Add a new password\n2. Edit an existing password\n3. Delete an existing password\n4. View passwords\n5. Save & Exit")
+        println("1. Add a new password" +
+                "\n2. Edit an existing password" +
+                "\n3. Delete an existing password" +
+                "\n4. View passwords" +
+                "\n5. Delete Account" +
+                "\n6. Save & Exit")
 
         // Display carrot
         carrot()
@@ -99,37 +110,43 @@ object PasswordManager {
             // If there really is a user name
             if (userName != null) {
                 // Save it
-                Database.setUserName(userName.toString())
+                User.setUserName(userName.toString())
             }
-            Database.readDatabase(userName.toString())
+            // Read the database to check for user
             val checkUserInfo = Database.readDatabase(userName.toString())
-            checkMaster = Database.readMaster(userName.toString()).toString()
 
+            // Get the master password
+            checkMaster = Database.readMaster(userName.toString())
+
+            // Prompt user for their master password
             println("Please enter your master password: ")
             carrot()
             enterMaster = choose.next()
             masterPassword = enterMaster
+
+            // Save the master password
             Password.createMaster(masterPassword)
 
+        // While the attempted and stored passwords do not match
+        while (!checkMaster.toString().equals(enterMaster.toString())) {
 
-        // If it matches
-        if (checkMaster.toString().equals(enterMaster.toString())) {
-            // Welcome back
-            println("Welcome back")
-            // Otherwise, try again
-        } else {
+            // Keep trying again
             println("Incorrect password. Try again.")
             carrot()
+
+            // New attempt
             enterMaster = choose.next()
             masterPassword = enterMaster
-            if (checkUserInfo.toString().equals(enterMaster)) {
-                // Welcome back
-                println("Welcome back")
-                // Otherwise, try again
-            }
         }
+        // If they do match
+        if (checkMaster.toString().equals(enterMaster.toString())) {
+
+            // Welcome back
+            println("Welcome back")
+        }
+
     }
-        while ("5" != choice) {
+        while ("6" != choice) {
             // Display available options
             menu()
             choice = choose.next()
@@ -160,8 +177,14 @@ object PasswordManager {
                 choice = null
             }
             if ("2" == choice) {
-                println("Edit which password: ")
+                println("Please enter the service for the password you would like to edit: ")
                 carrot()
+                println("Do Nothing")
+                /*val edit = choose.next()
+                val documentResult = Database.readDatabase(userName.toString())
+                if (documentResult.equals(edit)) {
+
+                }*/
                 println("Do Nothing")
 
                 // Reset the choice
@@ -181,12 +204,32 @@ object PasswordManager {
                 Password.view()
             }
             if ("5" == choice) {
+                // Check to see if the user really wants to delete their account
+                println("Are you sure you want to delete your account? (Y/N)")
+                carrot()
+                val shouldDelete = choose.next()
+
+                // If yes (Y or y)
+                if (shouldDelete == "Y" || shouldDelete == "y") {
+
+                    // Display sad message
+                    println("We're sorry to see you go.\nGoodbye.")
+
+                    // Delete the account
+                    Database.deleteAccount(userName.toString())
+
+                    // End the program
+                    break
+                } else {
+                    continue
+                }
+            }
+            if ("6" == choice) {
                 // Save the passwords at that location, with the provided name
-                println(Database.getUserName())
-                Database.saveAllUserData(Database.getUserName(), Password.array, masterPassword)
+                Database.saveAllUserData(User.getUserName(), Password.array, masterPassword)
 
                 // Tell user where their files have been saved to
-                println("""Your information has been saved successfully!""")
+                println("Your information has been saved successfully!")
                 println("\nGoodbye!")
 
                 // End the Program

@@ -9,7 +9,6 @@ import java.io.FileInputStream
 object Database {
     val db = FirestoreClient.getFirestore()
     val users = db.collection("users")
-    var uName = ""
 
 
     fun init() {
@@ -21,29 +20,21 @@ object Database {
         println("Initialized Firestore")
     }
 
-    fun setUserName(userName: String) {
-        uName = userName
-    }
-
-    fun getUserName() : String {
-        return uName
-    }
-
-    fun saveAllUserData(userName: String?, passwordData: String, masterPass: String?) {
-        println("saveAllUserData: $userName, $passwordData, $masterPass")
-        val userData = hashMapOf(
+    fun saveAllUserData(userName: String?, passwordData: Any, masterPass: String?) {
+        val userData: Any = hashMapOf(
             "accountInfo" to passwordData,
             "masterPass" to masterPass,
         )
         if (userName != null) {
-            users.document(userName).set(userData as Map<String, Any>)
+            val result = users.document(userName).set(userData)
+            result.get()
         }
     }
 
     fun readDatabase(userName: String) {
-        val future: ApiFuture<DocumentSnapshot> = users.document(getUserName()).get()
+        val future: ApiFuture<DocumentSnapshot> = users.document(User.getUserName()).get()
         val document = future.get()
-        println(document)
+
 
         if (document.exists()) {
             Password.create(document.getData().toString())
@@ -53,12 +44,18 @@ object Database {
     }
 
     fun readMaster(userName: String) : String {
-        val userFields = users.document(userName).get()
-        if (userFields.equals("masterPass")) {
-            val confirmMaster = userFields.get().toString()
+        val userFields = users.document(userName).get().get()
+        if (userFields.exists()) {
+        //if (userFields.equals("masterPass")) {
+            val confirmMaster = userFields["masterPass"] as String
             return confirmMaster
         }
         return "Error"
+    }
+
+    fun deleteAccount(userName: String) {
+        val result = users.document(userName).delete()
+        result.get()
     }
 
 }
